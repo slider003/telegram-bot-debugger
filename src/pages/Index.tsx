@@ -1,12 +1,71 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import { useState, useEffect } from "react";
+import { BotTokenInput } from "@/components/BotTokenInput";
+import { MessagesDisplay } from "@/components/MessagesDisplay";
+import { Header } from "@/components/Header";
+import { EmptyState } from "@/components/EmptyState";
+import { useTelegramBot } from "@/hooks/useTelegramBot";
 
 const Index = () => {
+  const [token, setToken] = useState<string>("");
+  
+  const { 
+    messages, 
+    loading, 
+    error, 
+    connectBot, 
+    disconnectBot, 
+    isConnected
+  } = useTelegramBot();
+
+  // Cleanup on component unmount or page refresh
+  useEffect(() => {
+    return () => {
+      if (isConnected) {
+        disconnectBot();
+      }
+    };
+  }, [isConnected, disconnectBot]);
+
+  const handleConnect = (newToken: string) => {
+    setToken(newToken);
+    connectBot(newToken);
+  };
+
+  const handleDisconnect = () => {
+    setToken("");
+    disconnectBot();
+  };
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
+    <div className="flex flex-col min-h-screen">
+      <Header />
+      <main className="flex-1 container mx-auto p-4 flex flex-col">
+        <BotTokenInput 
+          onConnect={handleConnect}
+          onDisconnect={handleDisconnect}
+          isConnected={isConnected}
+          loading={loading}
+        />
+        
+        {error && (
+          <div className="bg-destructive/20 border border-destructive text-destructive-foreground p-4 rounded-md my-4">
+            <h3 className="font-bold">Error</h3>
+            <p>{error}</p>
+          </div>
+        )}
+
+        {isConnected ? (
+          <MessagesDisplay messages={messages} />
+        ) : (
+          <EmptyState />
+        )}
+      </main>
+      
+      <footer className="py-6 text-center text-sm text-muted-foreground">
+        <p>Telegram Bot Debugger • All data is processed in your browser only</p>
+        <p className="mt-1">No data is stored on any server</p>
+      </footer>
     </div>
   );
 };
