@@ -17,13 +17,19 @@ export function useTelegramBot() {
   const lastUpdateIdRef = useRef<number>(-1);
   // Reference to the polling interval
   const pollingIntervalRef = useRef<number | null>(null);
+  // Flag to identify first connection
+  const isFirstFetchRef = useRef<boolean>(true);
 
   // Function to fetch updates from Telegram API
   const fetchUpdates = useCallback(async (botToken: string) => {
     try {
       // Build the URL with the offset parameter to avoid getting duplicate messages
       const offset = lastUpdateIdRef.current > -1 ? lastUpdateIdRef.current + 1 : undefined;
-      const url = `https://api.telegram.org/bot${botToken}/getUpdates${offset ? `?offset=${offset}` : ''}`;
+      
+      // For the very first fetch when connecting, always use an offset to prevent loading old messages
+      const url = `https://api.telegram.org/bot${botToken}/getUpdates${
+        offset || isFirstFetchRef.current ? `?offset=${offset || -1}` : ''
+      }`;
       
       const response = await fetch(url);
       
@@ -46,6 +52,11 @@ export function useTelegramBot() {
         
         // Add new messages to the state
         setMessages(prev => [...prev, ...data.result]);
+      }
+
+      // Mark first fetch as complete
+      if (isFirstFetchRef.current) {
+        isFirstFetchRef.current = false;
       }
       
       // Clear any previous errors
@@ -90,6 +101,8 @@ export function useTelegramBot() {
     // Reset message history and lastUpdateId when connecting a new bot
     setMessages([]);
     lastUpdateIdRef.current = -1;
+    // Reset first fetch flag
+    isFirstFetchRef.current = true;
     
     // Start polling updates
     startPolling(botToken);

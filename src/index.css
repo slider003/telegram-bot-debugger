@@ -107,105 +107,11 @@
   @apply bg-secondary/50 transition-colors duration-200;
 }
 
-.copy-notification {
-  @apply absolute top-2 right-2 bg-accent text-accent-foreground px-2 py-1 rounded text-xs;
-  animation: fadeOut 2s forwards;
+/* Simplified animation styles with reduced effects */
+.transition-opacity {
+  transition: opacity 0.2s ease;
 }
 
-@keyframes fadeOut {
-  0% {
-    opacity: 1;
-  }
-  70% {
-    opacity: 1;
-  }
-  100% {
-    opacity: 0;
-  }
+.transition-colors {
+  transition: background-color 0.2s ease, color 0.2s ease;
 }
-
-/* Animation keyframes */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
-}
-
-@keyframes slideInUp {
-  from {
-    transform: translateY(20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateY(0);
-    opacity: 1;
-  }
-}
-
-@keyframes pulse {
-  0% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.05);
-  }
-  100% {
-    transform: scale(1);
-  }
-}
-
-@keyframes slideInRight {
-  from {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-  to {
-    transform: translateX(0);
-    opacity: 1;
-  }
-}
-
-/* Animation utility classes */
-.fade-in {
-  animation: fadeIn 0.5s ease forwards;
-}
-
-.slide-in-up {
-  animation: slideInUp 0.5s ease forwards;
-}
-
-.slide-in-right {
-  animation: slideInRight 0.4s ease forwards;
-}
-
-.pulse-on-hover:hover {
-  animation: pulse 0.5s ease;
-}
-
-.message-enter {
-  opacity: 0;
-  transform: translateY(10px);
-  animation: slideInUp 0.3s ease forwards;
-}
-
-.staggered-item {
-  opacity: 0;
-  animation: fadeIn 0.5s ease forwards;
-}
-
-/* Staggered animation delay classes */
-.delay-100 {
-  animation-delay: 0.1s;
-}
-
-.delay-200 {
-  animation-delay: 0.2s;
-}
-
-.delay-300 {
-  animation-delay: 0.3s;
-}
-

@@ -15,7 +15,7 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
 
   if (messages.length === 0) {
     return (
-      <div className="flex-1 border border-border rounded-md bg-card p-6 flex items-center justify-center slide-in-up">
+      <div className="flex-1 border border-border rounded-md bg-card p-6 flex items-center justify-center">
         <p className="text-muted-foreground">
           Connected and waiting for new messages...
         </p>
@@ -24,8 +24,8 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
   }
 
   return (
-    <div className="flex-1 flex flex-col border border-border rounded-md bg-card overflow-hidden fade-in">
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border slide-in-right">
+    <div className="flex-1 flex flex-col border border-border rounded-md bg-card overflow-hidden">
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border">
         <h2 className="font-semibold">
           Messages ({messages.length})
         </h2>
@@ -53,7 +53,7 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
             variant="outline" 
             size="sm" 
             onClick={() => navigator.clipboard.writeText(JSON.stringify(messages, null, 2))}
-            className="transition-transform duration-200 pulse-on-hover"
+            className="transition-all duration-200"
           >
             Copy All
           </Button>
@@ -65,8 +65,7 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
           {[...messages].reverse().map((message, index) => (
             <div 
               key={`${message.update_id}-${index}`} 
-              className={`message-enter delay-${Math.min(index * 100, 300)}`} 
-              style={{animationDelay: `${Math.min(index * 0.05, 0.3)}s`}}
+              className="transition-opacity duration-200"
             >
               <MessageCard 
                 message={message} 
@@ -78,4 +77,4 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
       </ScrollArea>
     </div>
   );
-};
+}
