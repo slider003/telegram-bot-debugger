@@ -40,15 +40,15 @@ export const BotTokenInput = ({
   };
 
   return (
-    <Card className="mb-6">
+    <Card className="mb-6 slide-in-up">
       <CardHeader>
-        <CardTitle>Connect Your Telegram Bot</CardTitle>
-        <CardDescription>
+        <CardTitle className="fade-in">Connect Your Telegram Bot</CardTitle>
+        <CardDescription className="fade-in delay-100">
           Enter your bot token to start receiving real-time updates. Your token is processed locally and will not be stored anywhere.
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 fade-in delay-200">
           <div className="flex-1">
             {isConnected ? (
               <div className="flex items-center h-10 pl-3 bg-secondary rounded-md">
@@ -68,7 +68,7 @@ export const BotTokenInput = ({
               />
             )}
             {validationError && (
-              <p className="text-destructive text-sm mt-1">{validationError}</p>
+              <p className="text-destructive text-sm mt-1 fade-in">{validationError}</p>
             )}
           </div>
           {isConnected ? (
@@ -76,6 +76,7 @@ export const BotTokenInput = ({
               type="button" 
               variant="destructive" 
               onClick={onDisconnect}
+              className="transition-all duration-300 hover:scale-105"
             >
               Disconnect
             </Button>
@@ -83,14 +84,15 @@ export const BotTokenInput = ({
             <Button 
               type="submit" 
               disabled={loading || !inputToken.trim()}
+              className="transition-all duration-300 hover:scale-105"
             >
               {loading ? "Connecting..." : "Connect"}
             </Button>
           )}
         </form>
         {isConnected && (
-          <div className="mt-4 flex items-center">
-            <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
+          <div className="mt-4 flex items-center fade-in">
+            <span className="w-2 h-2 bg-green-500 rounded-full mr-2 animate-pulse"></span>
             <span className="text-sm text-muted-foreground">
               Connected and listening for updates...
             </span>

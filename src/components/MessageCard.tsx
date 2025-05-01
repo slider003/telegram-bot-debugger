@@ -30,7 +30,7 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
   const lastName = messageObj?.from?.last_name || '';
 
   return (
-    <div className="p-4 hover:bg-secondary/30 transition-colors duration-200 message-container relative">
+    <div className="p-4 hover:bg-secondary/30 transition-colors duration-300 message-container relative">
       {copied && (
         <div className="copy-notification">
           Copied!
@@ -48,12 +48,12 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
                 <span className="text-xs text-muted-foreground">{messageDate}</span>
               )}
             </div>
-            <div className="message-actions">
+            <div className="message-actions transition-all duration-300">
               <Button 
                 variant="ghost" 
                 size="sm" 
                 onClick={copyToClipboard}
-                className="h-6 text-xs"
+                className="h-6 text-xs transition-all duration-200 hover:scale-105"
               >
                 Copy JSON
               </Button>
@@ -64,7 +64,7 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
             {messageObj && (
               <>
                 {(firstName || lastName) && (
-                  <div>
+                  <div className="fade-in">
                     <span className="text-muted-foreground text-xs mr-2">From:</span>
                     <span>{firstName} {lastName}</span>
                     {userId && (
@@ -76,14 +76,14 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
                 )}
                 
                 {chatId && (
-                  <div>
+                  <div className="fade-in delay-100">
                     <span className="text-muted-foreground text-xs mr-2">Chat ID:</span>
                     <code>{chatId}</code>
                   </div>
                 )}
 
                 {messageText && (
-                  <div className="mt-1 bg-secondary p-3 rounded-md">
+                  <div className="mt-1 bg-secondary p-3 rounded-md fade-in delay-200 transition-all duration-300 hover:bg-secondary/80">
                     <span className="text-muted-foreground text-xs block mb-1">Message:</span>
                     <p className="whitespace-pre-wrap">{messageText}</p>
                   </div>
@@ -91,9 +91,9 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
               </>
             )}
 
-            <div className="mt-2 pt-2 border-t border-border">
+            <div className="mt-2 pt-2 border-t border-border fade-in delay-300">
               <details className="text-sm">
-                <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors">
+                <summary className="cursor-pointer text-muted-foreground hover:text-foreground transition-colors duration-200">
                   Show all fields
                 </summary>
                 <div className="mt-2 p-3 bg-secondary/60 rounded-md overflow-x-auto">
@@ -113,12 +113,12 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
               variant="ghost" 
               size="sm" 
               onClick={copyToClipboard}
-              className="h-6 text-xs"
+              className="h-6 text-xs transition-all duration-200 hover:scale-105"
             >
               Copy JSON
             </Button>
           </div>
-          <div className="bg-secondary/60 p-3 rounded-md overflow-x-auto">
+          <div className="bg-secondary/60 p-3 rounded-md overflow-x-auto transition-all duration-300 hover:bg-secondary/80">
             <pre className="text-sm">
               <code>{JSON.stringify(message, null, 2)}</code>
             </pre>
