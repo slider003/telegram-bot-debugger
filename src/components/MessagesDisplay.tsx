@@ -63,7 +63,11 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
       <ScrollArea className="flex-1">
         <div className="divide-y divide-border">
           {[...messages].reverse().map((message, index) => (
-            <div key={message.update_id} className={`message-enter delay-${Math.min(index * 100, 300)}`} style={{animationDelay: `${Math.min(index * 0.05, 0.3)}s`}}>
+            <div 
+              key={`${message.update_id}-${index}`} 
+              className={`message-enter delay-${Math.min(index * 100, 300)}`} 
+              style={{animationDelay: `${Math.min(index * 0.05, 0.3)}s`}}
+            >
               <MessageCard 
                 message={message} 
                 viewMode={view}
