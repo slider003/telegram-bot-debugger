@@ -1,22 +1,21 @@
+
 <!DOCTYPE html>
 <html>
   <head>
     <title>Redirecting...</title>
     <meta charset="utf-8" />
     <script>
-      // If not already on index.html, redirect and preserve path/query as hash
-      var l = window.location;
-      var newUrl = './index.html#' + l.pathname.replace(/^\/docs\/?/, '/') + l.search + l.hash;
-      if (!l.pathname.endsWith('/index.html')) {
-        window.location.replace(newUrl);
-      }
+      // Single-page application routing for GitHub Pages
+      var path = window.location.pathname;
+      var baseUrl = path.indexOf('/telegram-bot-debugger') === 0 ? '/telegram-bot-debugger' : '';
+      var redirectUrl = baseUrl + '/index.html';
+      window.location.replace(redirectUrl + window.location.search + window.location.hash);
     </script>
   </head>
   <body>
     <p>Redirecting to <a id="redirect-link" href="./index.html">index.html</a>...</p>
     <script>
-      // Update the link for users without JS redirect
-      document.getElementById('redirect-link').href = newUrl;
+      document.getElementById('redirect-link').href = redirectUrl;
     </script>
   </body>
 </html>

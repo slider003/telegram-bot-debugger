@@ -10,7 +10,7 @@ export default defineConfig(({ mode }) => ({
     host: "::",
     port: 8080,
   },
-  base: "./", // This ensures assets are loaded with relative paths
+  base: "./", // Ensuring proper base path for GitHub Pages
   plugins: [
     react(),
     mode === 'development' &&
@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => ({
     },
   },
   build: {
-    outDir: "docs", // Ensuring output goes to the docs folder
+    outDir: "docs", // Output to docs folder for GitHub Pages
+    emptyOutDir: true, // Clean the output directory before building
   }
 }));
