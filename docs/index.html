@@ -18,8 +18,21 @@
     <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
     
     <link rel="icon" href="favicon.ico" />
-    <script type="module" crossorigin src="./assets/index-C4KabsxB.js"></script>
-    <link rel="stylesheet" crossorigin href="./assets/index-DWunJR2H.css">
+    <script>
+      // Configure base URL for GitHub Pages
+      var baseUrl = window.location.pathname.indexOf('/telegram-bot-debugger') === 0 ? '/telegram-bot-debugger' : '';
+      var script = document.createElement('script');
+      script.type = 'module';
+      script.crossOrigin = true;
+      script.src = baseUrl + '/assets/index-C4KabsxB.js';
+      document.head.appendChild(script);
+
+      var link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.crossOrigin = true;
+      link.href = baseUrl + '/assets/index-DWunJR2H.css';
+      document.head.appendChild(link);
+    </script>
   </head>
 
   <body>
