@@ -11,6 +11,9 @@ export default defineConfig(({ mode }) => ({
     port: 8080,
   },
   base: "./", // Ensuring proper base path for GitHub Pages
+  build: {
+    outDir: 'docs', // Output to docs folder for GitHub Pages
+  },
   plugins: [
     react(),
     mode === 'development' &&
