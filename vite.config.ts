@@ -12,7 +12,8 @@ export default defineConfig(({ mode }) => ({
   },
   base: "./", // Ensuring proper base path for GitHub Pages
   build: {
-    outDir: 'docs', // Output to docs folder for GitHub Pages
+    outDir: "docs", // Output to docs folder for GitHub Pages
+    emptyOutDir: true, // Clean the output directory before building
   },
   plugins: [
     react(),
@@ -23,9 +24,6 @@ export default defineConfig(({ mode }) => ({
     alias: {
       "@": path.resolve(__dirname, "./src"),
     },
-  },
-  build: {
-    outDir: "docs", // Output to docs folder for GitHub Pages
-    emptyOutDir: true, // Clean the output directory before building
+    // build property merged above
   }
 }));
