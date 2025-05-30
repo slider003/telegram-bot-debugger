@@ -1,5 +1,5 @@
 
-import { useState, ChangeEvent, FormEvent } from "react";
+import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +20,16 @@ export const BotTokenInput = ({
 }: BotTokenInputProps) => {
   const [inputToken, setInputToken] = useState("");
   const [validationError, setValidationError] = useState("");
+  const [connectedToken, setConnectedToken] = useState("");
+
+  // Clear input when disconnected
+  useEffect(() => {
+    if (!isConnected) {
+      setInputToken("");
+      setConnectedToken("");
+      setValidationError("");
+    }
+  }, [isConnected]);
 
   const handleInputChange = (e: ChangeEvent<HTMLInputElement>) => {
     setInputToken(e.target.value);
@@ -36,7 +46,15 @@ export const BotTokenInput = ({
       return;
     }
     
+    setConnectedToken(inputToken);
     onConnect(inputToken);
+  };
+
+  const handleDisconnect = () => {
+    setInputToken("");
+    setConnectedToken("");
+    setValidationError("");
+    onDisconnect();
   };
 
   return (
@@ -53,7 +71,7 @@ export const BotTokenInput = ({
             {isConnected ? (
               <div className="flex items-center h-10 pl-3 bg-secondary rounded-md">
                 <span className="text-muted-foreground">
-                  {inputToken.substring(0, 5)}...{inputToken.slice(-5)}
+                  {connectedToken.substring(0, 5)}...{connectedToken.slice(-5)}
                 </span>
               </div>
             ) : (
@@ -75,7 +93,7 @@ export const BotTokenInput = ({
             <Button 
               type="button" 
               variant="destructive" 
-              onClick={onDisconnect}
+              onClick={handleDisconnect}
               className="transition-all duration-300 hover:scale-105"
             >
               Disconnect
