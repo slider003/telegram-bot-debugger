@@ -8,9 +8,10 @@ import { TelegramUpdate } from "@/types/telegram";
 
 interface MessagesDisplayProps {
   messages: TelegramUpdate[];
+  onChatIdSelect?: (chatId: string) => void;
 }
 
-export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
+export const MessagesDisplay = ({ messages, onChatIdSelect }: MessagesDisplayProps) => {
   const [view, setView] = useState<"structured" | "raw">("structured");
 
   if (messages.length === 0) {
@@ -70,6 +71,7 @@ export const MessagesDisplay = ({ messages }: MessagesDisplayProps) => {
               <MessageCard 
                 message={message} 
                 viewMode={view}
+                onChatIdSelect={onChatIdSelect}
               />
             </div>
           ))}

@@ -2,12 +2,14 @@
 import { useState, useEffect } from "react";
 import { BotTokenInput } from "@/components/BotTokenInput";
 import { MessagesDisplay } from "@/components/MessagesDisplay";
+import { MessageSender } from "@/components/MessageSender";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 
 const Index = () => {
   const [token, setToken] = useState<string>("");
+  const [selectedChatId, setSelectedChatId] = useState<string>("");
   
   const { 
     messages, 
@@ -34,7 +36,12 @@ const Index = () => {
 
   const handleDisconnect = () => {
     setToken("");
+    setSelectedChatId("");
     disconnectBot();
+  };
+
+  const handleChatIdSelect = (chatId: string) => {
+    setSelectedChatId(chatId);
   };
 
   return (
@@ -55,8 +62,18 @@ const Index = () => {
           </div>
         )}
 
+        {isConnected && (
+          <MessageSender 
+            botToken={token}
+            onChatIdSelect={handleChatIdSelect}
+          />
+        )}
+
         {isConnected ? (
-          <MessagesDisplay messages={messages} />
+          <MessagesDisplay 
+            messages={messages} 
+            onChatIdSelect={handleChatIdSelect}
+          />
         ) : (
           <EmptyState />
         )}
