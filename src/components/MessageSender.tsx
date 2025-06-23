@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -9,13 +9,21 @@ import { toast } from "@/hooks/use-toast";
 
 interface MessageSenderProps {
   botToken: string;
+  selectedChatId?: string;
   onChatIdSelect?: (chatId: string) => void;
 }
 
-export const MessageSender = ({ botToken, onChatIdSelect }: MessageSenderProps) => {
+export const MessageSender = ({ botToken, selectedChatId, onChatIdSelect }: MessageSenderProps) => {
   const [chatId, setChatId] = useState("");
   const [message, setMessage] = useState("");
   const [sending, setSending] = useState(false);
+
+  // Update chat ID when selectedChatId prop changes
+  useEffect(() => {
+    if (selectedChatId) {
+      setChatId(selectedChatId);
+    }
+  }, [selectedChatId]);
 
   const sendMessage = async () => {
     if (!chatId.trim() || !message.trim()) {
@@ -71,7 +79,7 @@ export const MessageSender = ({ botToken, onChatIdSelect }: MessageSenderProps) 
           Send Message
         </CardTitle>
         <CardDescription>
-          Send messages as your bot to any chat ID or username
+          Send messages as your bot to any chat ID or username. Click on chat IDs in messages below to auto-fill.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

@@ -65,6 +65,7 @@ const Index = () => {
         {isConnected && (
           <MessageSender 
             botToken={token}
+            selectedChatId={selectedChatId}
             onChatIdSelect={handleChatIdSelect}
           />
         )}

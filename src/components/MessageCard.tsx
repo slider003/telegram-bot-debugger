@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { formatDate } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -8,9 +7,10 @@ import { TelegramUpdate } from "@/types/telegram";
 interface MessageCardProps {
   message: TelegramUpdate;
   viewMode: "structured" | "raw";
+  onChatIdSelect?: (chatId: string) => void;
 }
 
-export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
+export const MessageCard = ({ message, viewMode, onChatIdSelect }: MessageCardProps) => {
   const [copied, setCopied] = useState(false);
   
   const copyToClipboard = () => {
@@ -28,6 +28,12 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
   const userId = messageObj?.from?.id;
   const firstName = messageObj?.from?.first_name || '';
   const lastName = messageObj?.from?.last_name || '';
+
+  const handleChatIdClick = () => {
+    if (chatId && onChatIdSelect) {
+      onChatIdSelect(chatId.toString());
+    }
+  };
 
   return (
     <div className="p-4 hover:bg-secondary/30 transition-colors duration-200 message-container relative">
@@ -78,7 +84,13 @@ export const MessageCard = ({ message, viewMode }: MessageCardProps) => {
                 {chatId && (
                   <div>
                     <span className="text-muted-foreground text-xs mr-2">Chat ID:</span>
-                    <code>{chatId}</code>
+                    <code 
+                      className={`${onChatIdSelect ? 'cursor-pointer hover:bg-primary/20 px-1 py-0.5 rounded transition-colors' : ''}`}
+                      onClick={handleChatIdClick}
+                      title={onChatIdSelect ? 'Click to use in message sender' : ''}
+                    >
+                      {chatId}
+                    </code>
                   </div>
                 )}
 
