@@ -20,6 +20,21 @@ export function useTelegramBot() {
   // Flag to identify first connection
   const isFirstFetchRef = useRef<boolean>(true);
 
+  // Function to delete webhook before polling
+  const deleteWebhook = useCallback(async (botToken: string) => {
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/deleteWebhook`);
+      const data = await response.json();
+      
+      if (!data.ok) {
+        console.warn("Failed to delete webhook:", data.description);
+      }
+    } catch (err) {
+      console.warn("Error deleting webhook:", err);
+      // Don't throw here as this is just a precaution
+    }
+  }, []);
+
   // Function to fetch updates from Telegram API
   const fetchUpdates = useCallback(async (botToken: string) => {
     try {
@@ -70,10 +85,13 @@ export function useTelegramBot() {
   }, []);
 
   // Start polling Telegram API
-  const startPolling = useCallback((botToken: string) => {
+  const startPolling = useCallback(async (botToken: string) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
+    
+    // Delete webhook first to avoid conflicts
+    await deleteWebhook(botToken);
     
     // Initial fetch
     fetchUpdates(botToken);
@@ -82,7 +100,7 @@ export function useTelegramBot() {
     pollingIntervalRef.current = window.setInterval(() => {
       fetchUpdates(botToken);
     }, DEFAULT_POLLING_INTERVAL);
-  }, [fetchUpdates]);
+  }, [fetchUpdates, deleteWebhook]);
 
   // Stop polling
   const stopPolling = useCallback(() => {
@@ -93,7 +111,7 @@ export function useTelegramBot() {
   }, []);
 
   // Connect to the bot
-  const connectBot = useCallback((botToken: string) => {
+  const connectBot = useCallback(async (botToken: string) => {
     setLoading(true);
     setError(null);
     setToken(botToken);
@@ -104,15 +122,21 @@ export function useTelegramBot() {
     // Reset first fetch flag
     isFirstFetchRef.current = true;
     
-    // Start polling updates
-    startPolling(botToken);
-    setIsConnected(true);
-    setLoading(false);
-    
-    toast({
-      title: "Connected to Telegram Bot",
-      description: "Listening for incoming messages...",
-    });
+    try {
+      // Start polling updates
+      await startPolling(botToken);
+      setIsConnected(true);
+      
+      toast({
+        title: "Connected to Telegram Bot",
+        description: "Listening for incoming messages...",
+      });
+    } catch (err: any) {
+      setError(`Connection failed: ${err.message}`);
+      setIsConnected(false);
+    } finally {
+      setLoading(false);
+    }
   }, [startPolling]);
 
   // Disconnect from the bot
