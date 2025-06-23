@@ -85,21 +85,28 @@ export function useTelegramBot() {
   }, []);
 
   // Start polling Telegram API
-  const startPolling = useCallback(async (botToken: string) => {
+  const startPolling = useCallback((botToken: string) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
     
-    // Delete webhook first to avoid conflicts
-    await deleteWebhook(botToken);
-    
-    // Initial fetch
-    fetchUpdates(botToken);
-    
-    // Set up polling
-    pollingIntervalRef.current = window.setInterval(() => {
+    // Delete webhook first to avoid conflicts, then start polling
+    deleteWebhook(botToken).then(() => {
+      // Initial fetch
       fetchUpdates(botToken);
-    }, DEFAULT_POLLING_INTERVAL);
+      
+      // Set up polling
+      pollingIntervalRef.current = window.setInterval(() => {
+        fetchUpdates(botToken);
+      }, DEFAULT_POLLING_INTERVAL);
+    }).catch((err) => {
+      console.warn("Failed to delete webhook before polling:", err);
+      // Continue with polling anyway
+      fetchUpdates(botToken);
+      pollingIntervalRef.current = window.setInterval(() => {
+        fetchUpdates(botToken);
+      }, DEFAULT_POLLING_INTERVAL);
+    });
   }, [fetchUpdates, deleteWebhook]);
 
   // Stop polling
@@ -111,7 +118,7 @@ export function useTelegramBot() {
   }, []);
 
   // Connect to the bot
-  const connectBot = useCallback(async (botToken: string) => {
+  const connectBot = useCallback((botToken: string) => {
     setLoading(true);
     setError(null);
     setToken(botToken);
@@ -124,7 +131,7 @@ export function useTelegramBot() {
     
     try {
       // Start polling updates
-      await startPolling(botToken);
+      startPolling(botToken);
       setIsConnected(true);
       
       toast({
