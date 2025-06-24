@@ -2,7 +2,7 @@
 
 ## Project info
 
-**URL**: https://lovable.dev/projects/3b9e6a37-309c-4c25-891a-7a35d71ad396
+**URL**: https://slider003.github.io/telegram-bot-debugger/
 
 ## How can I edit this code?
 
