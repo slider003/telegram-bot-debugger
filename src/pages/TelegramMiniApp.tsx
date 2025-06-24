@@ -1,16 +1,19 @@
 
 import { useState, useEffect } from "react";
 import { BotTokenInput } from "@/components/BotTokenInput";
+import { BotSelector } from "@/components/BotSelector";
 import { MessagesDisplay } from "@/components/MessagesDisplay";
 import { MessageSender } from "@/components/MessageSender";
 import { MiniAppHeader } from "@/components/MiniAppHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 import { useTelegramWebApp } from "@/hooks/useTelegramWebApp";
+import { useStoredBots } from "@/hooks/useStoredBots";
 
 const TelegramMiniApp = () => {
   const [token, setToken] = useState<string>("");
   const [selectedChatId, setSelectedChatId] = useState<string>("");
+  const [selectedToken, setSelectedToken] = useState<string>("");
   
   const { 
     messages, 
@@ -22,6 +25,7 @@ const TelegramMiniApp = () => {
   } = useTelegramBot();
 
   const { webApp, user, isReady } = useTelegramWebApp();
+  const { storedBots, addBot, removeBot } = useStoredBots();
 
   // Auto-fill chat ID with current user's ID if available
   useEffect(() => {
@@ -39,19 +43,36 @@ const TelegramMiniApp = () => {
     };
   }, [isConnected, disconnectBot]);
 
-  const handleConnect = (newToken: string) => {
+  const handleConnect = (newToken: string, botInfo?: any) => {
     setToken(newToken);
     connectBot(newToken);
+    
+    // Store bot info
+    if (botInfo) {
+      addBot(newToken, botInfo);
+    }
   };
 
   const handleDisconnect = () => {
     setToken("");
     setSelectedChatId("");
+    setSelectedToken("");
     disconnectBot();
   };
 
   const handleChatIdSelect = (chatId: string) => {
     setSelectedChatId(chatId);
+  };
+
+  const handleBotSelect = (token: string) => {
+    setSelectedToken(token);
+  };
+
+  const handleRemoveBot = (token: string) => {
+    removeBot(token);
+    if (selectedToken === token) {
+      setSelectedToken("");
+    }
   };
 
   if (!isReady) {
@@ -69,11 +90,18 @@ const TelegramMiniApp = () => {
       <MiniAppHeader user={user} />
       
       <main className="flex-1 container mx-auto p-3 flex flex-col max-w-md">
+        <BotSelector 
+          storedBots={storedBots}
+          onSelectBot={handleBotSelect}
+          onRemoveBot={handleRemoveBot}
+        />
+
         <BotTokenInput 
           onConnect={handleConnect}
           onDisconnect={handleDisconnect}
           isConnected={isConnected}
           loading={loading}
+          selectedToken={selectedToken}
         />
         
         {error && (
