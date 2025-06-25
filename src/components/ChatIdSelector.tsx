@@ -71,7 +71,7 @@ export const ChatIdSelector = ({
                       )}
                       {stored.chatInfo.first_name && (
                         <span className="text-sm text-muted-foreground">
-                          {stored.chatInfo.first_name} {stored.chatInfo.last_name}
+                          {stored.chatInfo.first_name} {stored.chatInfo.last_name || ''}
                         </span>
                       )}
                     </>
