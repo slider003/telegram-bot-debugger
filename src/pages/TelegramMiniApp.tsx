@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from "react";
 import { BotTokenInput } from "@/components/BotTokenInput";
 import { BotSelector } from "@/components/BotSelector";
@@ -9,6 +8,8 @@ import { EmptyState } from "@/components/EmptyState";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 import { useTelegramWebApp } from "@/hooks/useTelegramWebApp";
 import { useStoredBots } from "@/hooks/useStoredBots";
+import { useStoredChatIds } from "@/hooks/useStoredChatIds";
+import { ChatIdSelector } from "@/components/ChatIdSelector";
 
 const TelegramMiniApp = () => {
   const [token, setToken] = useState<string>("");
@@ -26,6 +27,7 @@ const TelegramMiniApp = () => {
 
   const { webApp, user, isReady } = useTelegramWebApp();
   const { storedBots, addBot, removeBot } = useStoredBots();
+  const { storedChatIds, addChatId, removeChatId } = useStoredChatIds();
 
   // Auto-fill chat ID with current user's ID if available
   useEffect(() => {
@@ -42,6 +44,25 @@ const TelegramMiniApp = () => {
       }
     };
   }, [isConnected, disconnectBot]);
+
+  // Add effect to store chat IDs from incoming messages
+  useEffect(() => {
+    if (messages.length > 0) {
+      messages.forEach(message => {
+        if (message.message?.chat) {
+          const chatId = message.message.chat.id.toString();
+          const chatInfo = {
+            type: message.message.chat.type,
+            title: message.message.chat.title,
+            username: message.message.chat.username,
+            first_name: message.message.chat.first_name,
+            last_name: message.message.chat.last_name
+          };
+          addChatId(chatId, chatInfo);
+        }
+      });
+    }
+  }, [messages, addChatId]);
 
   const handleConnect = (newToken: string, botInfo?: any) => {
     setToken(newToken);
@@ -62,6 +83,15 @@ const TelegramMiniApp = () => {
 
   const handleChatIdSelect = (chatId: string) => {
     setSelectedChatId(chatId);
+    // Also store this as a used chat ID
+    addChatId(chatId);
+  };
+
+  const handleRemoveChatId = (chatId: string) => {
+    removeChatId(chatId);
+    if (selectedChatId === chatId) {
+      setSelectedChatId("");
+    }
   };
 
   const handleBotSelect = (token: string) => {
@@ -110,6 +140,13 @@ const TelegramMiniApp = () => {
             <p>{error}</p>
           </div>
         )}
+
+        <ChatIdSelector 
+          storedChatIds={storedChatIds}
+          onSelectChatId={handleChatIdSelect}
+          onRemoveChatId={handleRemoveChatId}
+          selectedChatId={selectedChatId}
+        />
 
         {isConnected && (
           <MessageSender 
