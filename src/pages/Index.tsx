@@ -5,6 +5,7 @@ import { MessagesDisplay } from "@/components/MessagesDisplay";
 import { MessageSender } from "@/components/MessageSender";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
+import { BotCommandsManager } from "@/components/BotCommandsManager";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 
 const Index = () => {
@@ -61,6 +62,11 @@ const Index = () => {
             <p>{error}</p>
           </div>
         )}
+
+        <BotCommandsManager 
+          botToken={token}
+          isConnected={isConnected}
+        />
 
         {isConnected && (
           <MessageSender 

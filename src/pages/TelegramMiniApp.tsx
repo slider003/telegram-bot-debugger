@@ -1,3 +1,4 @@
+
 import { useState, useEffect } from "react";
 import { BotTokenInput } from "@/components/BotTokenInput";
 import { BotSelector } from "@/components/BotSelector";
@@ -5,6 +6,7 @@ import { MessagesDisplay } from "@/components/MessagesDisplay";
 import { MessageSender } from "@/components/MessageSender";
 import { MiniAppHeader } from "@/components/MiniAppHeader";
 import { EmptyState } from "@/components/EmptyState";
+import { BotCommandsManager } from "@/components/BotCommandsManager";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 import { useTelegramWebApp } from "@/hooks/useTelegramWebApp";
 import { useStoredBots } from "@/hooks/useStoredBots";
@@ -140,6 +142,11 @@ const TelegramMiniApp = () => {
             <p>{error}</p>
           </div>
         )}
+
+        <BotCommandsManager 
+          botToken={token}
+          isConnected={isConnected}
+        />
 
         <ChatIdSelector 
           storedChatIds={storedChatIds}
