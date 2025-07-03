@@ -15,10 +15,12 @@ const Index = () => {
   const { 
     messages, 
     loading, 
+    loadingHistory,
     error, 
     connectBot, 
     disconnectBot, 
-    isConnected
+    isConnected,
+    loadHistoricalMessages
   } = useTelegramBot();
 
   // Cleanup on component unmount or page refresh
@@ -80,6 +82,8 @@ const Index = () => {
           <MessagesDisplay 
             messages={messages} 
             onChatIdSelect={handleChatIdSelect}
+            loadingHistory={loadingHistory}
+            onLoadMoreHistory={() => loadHistoricalMessages(10)}
           />
         ) : (
           <EmptyState />

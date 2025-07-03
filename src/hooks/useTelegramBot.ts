@@ -11,14 +11,19 @@ export function useTelegramBot() {
   const [messages, setMessages] = useState<TelegramUpdate[]>([]);
   const [isConnected, setIsConnected] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState<string | null>(null);
   
   // Store the latest update_id to avoid duplicate messages
   const lastUpdateIdRef = useRef<number>(-1);
+  // Store the earliest update_id for loading history
+  const earliestUpdateIdRef = useRef<number>(-1);
   // Reference to the polling interval
   const pollingIntervalRef = useRef<number | null>(null);
   // Flag to identify first connection
   const isFirstFetchRef = useRef<boolean>(true);
+  // Flag to check if we've loaded initial history
+  const hasLoadedInitialHistoryRef = useRef<boolean>(false);
 
   // Function to delete webhook before polling
   const deleteWebhook = useCallback(async (botToken: string) => {
@@ -84,30 +89,119 @@ export function useTelegramBot() {
     }
   }, []);
 
+  // Function to load historical messages
+  const loadHistoricalMessages = useCallback(async (botToken: string, limit: number = 10) => {
+    if (!botToken || loadingHistory) return;
+    
+    setLoadingHistory(true);
+    try {
+      // Calculate offset for historical messages
+      const offset = earliestUpdateIdRef.current > 0 ? earliestUpdateIdRef.current - limit : undefined;
+      
+      const url = `https://api.telegram.org/bot${botToken}/getUpdates${
+        offset ? `?offset=${offset}&limit=${limit}` : `?limit=${limit}`
+      }`;
+      
+      const response = await fetch(url);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.description || `HTTP error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.ok) {
+        throw new Error(data.description || "Unknown error from Telegram API");
+      }
+      
+      // Process historical updates
+      if (data.result && data.result.length > 0) {
+        // Filter out messages we already have
+        const existingUpdateIds = new Set(messages.map(msg => msg.update_id));
+        const newMessages = data.result.filter((update: TelegramUpdate) => !existingUpdateIds.has(update.update_id));
+        
+        if (newMessages.length > 0) {
+          // Find the lowest update_id for future historical loading
+          const lowestUpdateId = Math.min(...newMessages.map((update: TelegramUpdate) => update.update_id));
+          earliestUpdateIdRef.current = lowestUpdateId;
+          
+          // Add historical messages to the beginning of the state
+          setMessages(prev => [...newMessages, ...prev]);
+        }
+      }
+      
+    } catch (err: any) {
+      setError(`Failed to load historical messages: ${err.message}`);
+    } finally {
+      setLoadingHistory(false);
+    }
+  }, [messages, loadingHistory]);
+
+  // Function to load initial 10 messages when connecting
+  const loadInitialHistory = useCallback(async (botToken: string) => {
+    if (hasLoadedInitialHistoryRef.current) return;
+    
+    try {
+      const response = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates?limit=10`);
+      
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.description || `HTTP error: ${response.status}`);
+      }
+      
+      const data = await response.json();
+      
+      if (!data.ok) {
+        throw new Error(data.description || "Unknown error from Telegram API");
+      }
+      
+      // Process initial updates
+      if (data.result && data.result.length > 0) {
+        // Find the highest and lowest update_ids
+        const updateIds = data.result.map((update: TelegramUpdate) => update.update_id);
+        const highestUpdateId = Math.max(...updateIds);
+        const lowestUpdateId = Math.min(...updateIds);
+        
+        lastUpdateIdRef.current = highestUpdateId;
+        earliestUpdateIdRef.current = lowestUpdateId;
+        
+        // Set initial messages
+        setMessages(data.result);
+      }
+      
+      hasLoadedInitialHistoryRef.current = true;
+      
+    } catch (err: any) {
+      console.warn("Failed to load initial history:", err.message);
+      // Don't throw here, continue with normal polling
+    }
+  }, []);
+
   // Start polling Telegram API
   const startPolling = useCallback((botToken: string) => {
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
     
-    // Delete webhook first to avoid conflicts, then start polling
-    deleteWebhook(botToken).then(() => {
-      // Initial fetch
-      fetchUpdates(botToken);
+    // Delete webhook first to avoid conflicts, then load initial history and start polling
+    deleteWebhook(botToken).then(async () => {
+      // Load initial 10 messages first
+      await loadInitialHistory(botToken);
       
-      // Set up polling
+      // Set up polling for new messages
       pollingIntervalRef.current = window.setInterval(() => {
         fetchUpdates(botToken);
       }, DEFAULT_POLLING_INTERVAL);
-    }).catch((err) => {
+    }).catch(async (err) => {
       console.warn("Failed to delete webhook before polling:", err);
-      // Continue with polling anyway
-      fetchUpdates(botToken);
+      // Continue with loading initial history and polling anyway
+      await loadInitialHistory(botToken);
       pollingIntervalRef.current = window.setInterval(() => {
         fetchUpdates(botToken);
       }, DEFAULT_POLLING_INTERVAL);
     });
-  }, [fetchUpdates, deleteWebhook]);
+  }, [fetchUpdates, deleteWebhook, loadInitialHistory]);
 
   // Stop polling
   const stopPolling = useCallback(() => {
@@ -123,11 +217,13 @@ export function useTelegramBot() {
     setError(null);
     setToken(botToken);
     
-    // Reset message history and lastUpdateId when connecting a new bot
+    // Reset message history and refs when connecting a new bot
     setMessages([]);
     lastUpdateIdRef.current = -1;
-    // Reset first fetch flag
+    earliestUpdateIdRef.current = -1;
+    // Reset flags
     isFirstFetchRef.current = true;
+    hasLoadedInitialHistoryRef.current = false;
     
     try {
       // Start polling updates
@@ -136,7 +232,7 @@ export function useTelegramBot() {
       
       toast({
         title: "Connected to Telegram Bot",
-        description: "Listening for incoming messages...",
+        description: "Loading recent messages and listening for new ones...",
       });
     } catch (err: any) {
       setError(`Connection failed: ${err.message}`);
@@ -172,9 +268,11 @@ export function useTelegramBot() {
   return {
     messages,
     loading,
+    loadingHistory,
     error,
     isConnected,
     connectBot,
     disconnectBot,
+    loadHistoricalMessages: (limit?: number) => loadHistoricalMessages(token, limit),
   };
 }

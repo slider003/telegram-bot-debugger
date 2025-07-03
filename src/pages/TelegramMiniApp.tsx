@@ -21,10 +21,12 @@ const TelegramMiniApp = () => {
   const { 
     messages, 
     loading, 
+    loadingHistory,
     error, 
     connectBot, 
     disconnectBot, 
-    isConnected
+    isConnected,
+    loadHistoricalMessages
   } = useTelegramBot();
 
   const { webApp, user, isReady } = useTelegramWebApp();
@@ -167,6 +169,8 @@ const TelegramMiniApp = () => {
           <MessagesDisplay 
             messages={messages} 
             onChatIdSelect={handleChatIdSelect}
+            loadingHistory={loadingHistory}
+            onLoadMoreHistory={() => loadHistoricalMessages(10)}
           />
         ) : (
           <EmptyState />
