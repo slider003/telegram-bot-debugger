@@ -7,6 +7,7 @@ import { MessageSender } from "@/components/MessageSender";
 import { MiniAppHeader } from "@/components/MiniAppHeader";
 import { EmptyState } from "@/components/EmptyState";
 import { BotCommandsManager } from "@/components/BotCommandsManager";
+import { BotInfoManager } from "@/components/BotInfoManager";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 import { useTelegramWebApp } from "@/hooks/useTelegramWebApp";
 import { useStoredBots } from "@/hooks/useStoredBots";
@@ -21,12 +22,10 @@ const TelegramMiniApp = () => {
   const { 
     messages, 
     loading, 
-    loadingHistory,
     error, 
     connectBot, 
     disconnectBot, 
-    isConnected,
-    loadHistoricalMessages
+    isConnected
   } = useTelegramBot();
 
   const { webApp, user, isReady } = useTelegramWebApp();
@@ -145,6 +144,11 @@ const TelegramMiniApp = () => {
           </div>
         )}
 
+        <BotInfoManager 
+          botToken={token}
+          isConnected={isConnected}
+        />
+
         <BotCommandsManager 
           botToken={token}
           isConnected={isConnected}
@@ -169,8 +173,6 @@ const TelegramMiniApp = () => {
           <MessagesDisplay 
             messages={messages} 
             onChatIdSelect={handleChatIdSelect}
-            loadingHistory={loadingHistory}
-            onLoadMoreHistory={() => loadHistoricalMessages(10)}
           />
         ) : (
           <EmptyState />

@@ -9,11 +9,9 @@ import { TelegramUpdate } from "@/types/telegram";
 interface MessagesDisplayProps {
   messages: TelegramUpdate[];
   onChatIdSelect?: (chatId: string) => void;
-  loadingHistory?: boolean;
-  onLoadMoreHistory?: () => void;
 }
 
-export const MessagesDisplay = ({ messages, onChatIdSelect, loadingHistory, onLoadMoreHistory }: MessagesDisplayProps) => {
+export const MessagesDisplay = ({ messages, onChatIdSelect }: MessagesDisplayProps) => {
   const [view, setView] = useState<"structured" | "raw">("structured");
 
   if (messages.length === 0) {
@@ -65,19 +63,6 @@ export const MessagesDisplay = ({ messages, onChatIdSelect, loadingHistory, onLo
 
       <ScrollArea className="flex-1">
         <div className="divide-y divide-border">
-          {onLoadMoreHistory && (
-            <div className="p-4 border-b border-border">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={onLoadMoreHistory}
-                disabled={loadingHistory}
-                className="w-full transition-all duration-200"
-              >
-                {loadingHistory ? "Loading..." : "Load More History"}
-              </Button>
-            </div>
-          )}
           {[...messages].reverse().map((message, index) => (
             <div 
               key={`${message.update_id}-${index}`} 

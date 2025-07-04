@@ -6,6 +6,7 @@ import { MessageSender } from "@/components/MessageSender";
 import { Header } from "@/components/Header";
 import { EmptyState } from "@/components/EmptyState";
 import { BotCommandsManager } from "@/components/BotCommandsManager";
+import { BotInfoManager } from "@/components/BotInfoManager";
 import { useTelegramBot } from "@/hooks/useTelegramBot";
 
 const Index = () => {
@@ -15,12 +16,10 @@ const Index = () => {
   const { 
     messages, 
     loading, 
-    loadingHistory,
     error, 
     connectBot, 
     disconnectBot, 
-    isConnected,
-    loadHistoricalMessages
+    isConnected
   } = useTelegramBot();
 
   // Cleanup on component unmount or page refresh
@@ -65,6 +64,11 @@ const Index = () => {
           </div>
         )}
 
+        <BotInfoManager 
+          botToken={token}
+          isConnected={isConnected}
+        />
+
         <BotCommandsManager 
           botToken={token}
           isConnected={isConnected}
@@ -82,8 +86,6 @@ const Index = () => {
           <MessagesDisplay 
             messages={messages} 
             onChatIdSelect={handleChatIdSelect}
-            loadingHistory={loadingHistory}
-            onLoadMoreHistory={() => loadHistoricalMessages(10)}
           />
         ) : (
           <EmptyState />
