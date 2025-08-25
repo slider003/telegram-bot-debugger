@@ -33,6 +33,15 @@
     --input: 217.2 32.6% 17.5%;
     --ring: 201 100% 40%;
 
+    --sidebar-background: 222 47% 11%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-primary: 201 100% 40%;
+    --sidebar-primary-foreground: 0 0% 100%;
+    --sidebar-accent: 201 100% 40%;
+    --sidebar-accent-foreground: 0 0% 100%;
+    --sidebar-border: 217.2 32.6% 17.5%;
+    --sidebar-ring: 201 100% 40%;
+
     --radius: 0.5rem;
     
     font-family: 'Inter', sans-serif;
@@ -84,19 +93,19 @@
 }
 
 .json-string {
-  @apply text-green-400;
+  @apply text-secondary-foreground;
 }
 
 .json-number {
-  @apply text-blue-400;
+  @apply text-primary;
 }
 
 .json-boolean {
-  @apply text-yellow-400;
+  @apply text-accent;
 }
 
 .json-null {
-  @apply text-gray-400;
+  @apply text-muted-foreground;
 }
 
 .expand-button {
