@@ -19,6 +19,9 @@ export function useTelegramBot() {
   const pollingIntervalRef = useRef<number | null>(null);
   // Flag to identify first connection
   const isFirstFetchRef = useRef<boolean>(true);
+  // Error counter for retry logic
+  const errorCountRef = useRef<number>(0);
+  const maxRetries = 3;
 
   // Function to delete webhook before polling
   const deleteWebhook = useCallback(async (botToken: string) => {
@@ -35,6 +38,14 @@ export function useTelegramBot() {
     }
   }, []);
 
+  // Stop polling
+  const stopPolling = useCallback(() => {
+    if (pollingIntervalRef.current) {
+      clearInterval(pollingIntervalRef.current);
+      pollingIntervalRef.current = null;
+    }
+  }, []);
+
   // Function to fetch updates from Telegram API
   const fetchUpdates = useCallback(async (botToken: string) => {
     try {
@@ -46,21 +57,68 @@ export function useTelegramBot() {
         offset ? `?offset=${offset}` : '?offset=-1'
       }`;
       
+      console.log("Fetching updates from:", url);
       const response = await fetch(url);
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.description || `HTTP error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        
+        // Check if it's an authentication error (should disconnect)
+        if (response.status === 401 || response.status === 403) {
+          console.error("Authentication error:", errorData);
+          setError(`Authentication failed: ${errorData.description || 'Invalid bot token'}`);
+          setIsConnected(false);
+          stopPolling();
+          return;
+        }
+        
+        // For other errors, increment error count and retry
+        errorCountRef.current++;
+        console.warn(`API error (attempt ${errorCountRef.current}):`, errorData);
+        
+        if (errorCountRef.current >= maxRetries) {
+          setError(`API error after ${maxRetries} attempts: ${errorData.description || `HTTP ${response.status}`}`);
+          setIsConnected(false);
+          stopPolling();
+          return;
+        }
+        
+        // Don't throw, just return to continue polling
+        return;
       }
       
       const data = await response.json();
       
       if (!data.ok) {
-        throw new Error(data.description || "Unknown error from Telegram API");
+        // Handle Telegram API errors
+        console.error("Telegram API error:", data);
+        
+        // Check for token-related errors
+        if (data.error_code === 401 || data.description?.includes('token')) {
+          setError(`Bot token error: ${data.description}`);
+          setIsConnected(false);
+          stopPolling();
+          return;
+        }
+        
+        // For other API errors, retry with backoff
+        errorCountRef.current++;
+        if (errorCountRef.current >= maxRetries) {
+          setError(`Telegram API error: ${data.description || "Unknown error"}`);
+          setIsConnected(false);
+          stopPolling();
+          return;
+        }
+        
+        return;
       }
+      
+      // Success - reset error counter
+      errorCountRef.current = 0;
       
       // Process updates
       if (data.result && data.result.length > 0) {
+        console.log(`Received ${data.result.length} new updates`);
         // Find the highest update_id
         const highestUpdateId = Math.max(...data.result.map((update: TelegramUpdate) => update.update_id));
         lastUpdateIdRef.current = highestUpdateId;
@@ -72,21 +130,32 @@ export function useTelegramBot() {
       // Mark first fetch as complete
       if (isFirstFetchRef.current) {
         isFirstFetchRef.current = false;
+        console.log("First fetch completed successfully");
       }
       
       // Clear any previous errors
       setError(null);
       
     } catch (err: any) {
-      setError(`Failed to fetch updates: ${err.message}`);
-      setIsConnected(false);
-      stopPolling();
+      console.error("Network error:", err);
+      errorCountRef.current++;
+      
+      if (errorCountRef.current >= maxRetries) {
+        setError(`Network error after ${maxRetries} attempts: ${err.message}`);
+        setIsConnected(false);
+        stopPolling();
+      }
+      
+      // For network errors, don't immediately disconnect - let it retry
     }
-  }, []);
+  }, [stopPolling]);
 
 
   // Start polling Telegram API
   const startPolling = useCallback((botToken: string) => {
+    // Reset error counter when starting new polling session
+    errorCountRef.current = 0;
+    
     if (pollingIntervalRef.current) {
       clearInterval(pollingIntervalRef.current);
     }
@@ -106,14 +175,6 @@ export function useTelegramBot() {
     });
   }, [fetchUpdates, deleteWebhook]);
 
-  // Stop polling
-  const stopPolling = useCallback(() => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-  }, []);
-
   // Connect to the bot
   const connectBot = useCallback((botToken: string) => {
     setLoading(true);
@@ -125,6 +186,7 @@ export function useTelegramBot() {
     lastUpdateIdRef.current = -1;
     // Reset flags
     isFirstFetchRef.current = true;
+    errorCountRef.current = 0;
     
     try {
       // Start polling updates
